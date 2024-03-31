@@ -1,21 +1,20 @@
 use gtk::prelude::*;
-use gtk::{Image, Window, WindowType};
+use gtk::{Application, ApplicationWindow};
 
-fn main() {
-    gtk::init().expect("Failed to initialize GTK.");
+fn main(){
+    let app = Application::builder()
+    .application_id(".com.matching_programming_languages")
+    .build();
 
-    let window = gtk::Window::new(gtk::WindowType::Toplevel);
-    window.set_title("Matching Programming Languages");
-    window.set_default_size(1350, 900);
+    app.connect_activate(build_ui);
+    app.run();
+}
 
-    let image = Image::new();
-    image.set_from_file(Some("cat.png"));
-    image.set_size_request(500, 600);
-    
+fn build_ui(app: &Application) {
+    let window = ApplicationWindow::builder()
+    .title("Matching Programming Languages")
+    .application(app)
+    .build();
 
-    window.add(&image);
-    
-    window.show_all();
-
-    gtk::main();
+    window.show();
 }

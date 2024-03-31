@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 gtk = "0.18.0"
+image = "0.25.1"
+

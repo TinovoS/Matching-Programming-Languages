@@ -1,13 +1,12 @@
 [package]
-name = "my-gtk-app"
+name = "matching_programming_languages"
 version = "0.1.0"
 edition = "2021"
+include = ["resources"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8.5"
-gtk = {version = "0.18.1", package = "gtk"}
-
-
-
+iced = { version = "0.12.1", features = ["image"] }
+iced_native = "0.10.3"

@@ -1,38 +1,9 @@
-//Structure with needed information for memory game
-struct GameState{
-    num_of_cards: u8,
-    picked: [bool; 6],
-    correct_order: [i8; 6],
-    card_order: [i8; 6],
-    picked_count: u8,
-    pick_number: u8,
-    correct_pairs: u8,
-    card: i8,
-    reset: bool,
-}
-
 use eframe::egui;
 
 fn main() -> Result<(), eframe::Error> {
-
-    //lets initialize game status
-    //------------------------------------
-    let game_state = GameState{
-        num_of_cards: 6,
-        picked: [true; 6],
-        correct_order: [-1; 6],
-        card_order: [-1; 6],
-        picked_count: 0,
-        pick_number: 0,
-        correct_pairs: 0,
-        card: 0,
-        reset: false,
-    };
-    randomize_cards(game_state);
-    //------------------------------------
-    env_logger::init(); // Log to stderr (if you run with RUST_LOG=debug).
+    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([600.0, 800.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([1000.0, 1200.0]),
         ..Default::default()
     };
     eframe::run_native(
@@ -49,19 +20,47 @@ fn main() -> Result<(), eframe::Error> {
 #[derive(Default)]
 struct MyApp {}
 
+struct GameState{
+    num_of_cards: u8,
+    picked: [bool; 6],
+    correct_order: [i8; 6],
+    card_order: [i8; 6],
+    picked_count: u8,
+    pick_number: u8,
+    correct_pairs: u8,
+    card: i8,
+    reset: bool,
+}
+
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let num_columns = 4;
+        let num_rows = 3;
         egui::CentralPanel::default().show(ctx, |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| {
-                ui.add( 
-                    egui::Image::new(egui::include_image!("../resources/image1.png"))
-                );
 
-                ui.image(egui::include_image!("../resources/image1.png"));
-            });
+            let available_size = ui.available_size();
+            let min_col_width = available_size.x*0.99  / num_columns as f32;
+            let min_row_height = available_size.y*0.99  / num_rows as f32;
+            for _ in 0..num_rows  {
+            egui::Grid::new(num_rows)
+                .num_columns(num_columns)
+                .min_col_width(min_col_width)
+                .min_row_height(min_row_height)
+                .show(ui, |mut row| {
+                    for _ in 0..num_columns  { // Add 4 image buttons
+                        row.add(
+                            egui::ImageButton::new(
+                                egui::include_image!("/home/labus/Desktop/Matching-Programming-Languages/resources/background.svg")
+                            )
+                            
+                        );
+                    }
+                });
+            }
         });
     }
 }
+
 fn randomize_cards(mut game_state: GameState) -> () {
     for n in 0..6 {
         game_state.card_order[n] = -1;

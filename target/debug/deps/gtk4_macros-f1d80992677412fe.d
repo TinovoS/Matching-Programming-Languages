@@ -1,9 +1,0 @@
-/home/labus/Desktop/cao/Matching-Programming-Languages/target/debug/deps/libgtk4_macros-f1d80992677412fe.so: /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/lib.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/attribute_parser.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/composite_template_derive.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/template_callbacks_attribute.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/util.rs
-
-/home/labus/Desktop/cao/Matching-Programming-Languages/target/debug/deps/gtk4_macros-f1d80992677412fe.d: /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/lib.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/attribute_parser.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/composite_template_derive.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/template_callbacks_attribute.rs /home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/util.rs
-
-/home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/lib.rs:
-/home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/attribute_parser.rs:
-/home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/composite_template_derive.rs:
-/home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/template_callbacks_attribute.rs:
-/home/labus/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gtk4-macros-0.8.1/src/util.rs:

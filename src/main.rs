@@ -1,7 +1,3 @@
-use iced::executor;
-use iced::{Application, Command, Element, Settings, Theme,Length};
-use iced::widget::{Column,Row,Image};
-
 //Structure with needed information for memory game
 struct GameState{
     num_of_cards: u8,
@@ -15,94 +11,57 @@ struct GameState{
     reset: bool,
 }
 
-pub fn main() -> iced::Result {
-    Hello::run(Settings::default())
+use eframe::egui;
+
+fn main() -> Result<(), eframe::Error> {
+
+    //lets initialize game status
+    //------------------------------------
+    let game_state = GameState{
+        num_of_cards: 6,
+        picked: [true; 6],
+        correct_order: [-1; 6],
+        card_order: [-1; 6],
+        picked_count: 0,
+        pick_number: 0,
+        correct_pairs: 0,
+        card: 0,
+        reset: false,
+    };
+    randomize_cards(game_state);
+    //------------------------------------
+    env_logger::init(); // Log to stderr (if you run with RUST_LOG=debug).
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([600.0, 800.0]),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "Image Viewer",
+        options,
+        Box::new(|cc| {
+            // This gives us image support:
+            egui_extras::install_image_loaders(&cc.egui_ctx);
+            Box::<MyApp>::default()
+        }),
+    )
 }
 
-struct Hello;
+#[derive(Default)]
+struct MyApp {}
 
-impl Application for Hello {
-    type Executor = executor::Default;
-    type Flags = ();
-    type Message = ();
-    type Theme = Theme;
+impl eframe::App for MyApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                ui.add( 
+                    egui::Image::new(egui::include_image!("../resources/image1.png"))
+                );
 
-    fn new(_flags: ()) -> (Hello, Command<Self::Message>) {
-        (Hello, Command::none())
-    }
-
-    fn title(&self) -> String {
-        String::from("Matching_Programming_Languages")
-    }
-
-    fn update(&mut self, _message: Self::Message) -> Command<Self::Message> {
-        Command::none()
-    }
-
-    fn view(&self) -> Element<Self::Message> {
-
-        let image_width = Length::Fill; // Each image takes 1/3 of the width
-        let image_height = image_width; // Maintain aspect ratio
-
-        //lets initialize game status
-        //------------------------------------
-        let game_state = GameState{
-            num_of_cards: 6,
-            picked: [true; 6],
-            correct_order: [-1; 6],
-            card_order: [-1; 6],
-            picked_count: 0,
-            pick_number: 0,
-            correct_pairs: 0,
-            card: 0,
-            reset: false,
-        };
-        randomize_cards(game_state);
-        //------------------------------------
-        Column::new()
-            .spacing(10) // Add spacing between rows (optional)
-            .push(
-                Row::new()
-                    .spacing(10) // Add spacing between images (optional)
-                    .push(
-                        Image::new("resources/image.jpeg")
-                            .width(image_width)
-                            .height(image_height),
-                    )
-                    .push(
-                        Image::new("resources/image.jpeg")
-                            .width(image_width)
-                            .height(image_height),
-                    )
-                    .push(
-                        Image::new("resources/image.jpeg")
-                            .width(image_width)
-                            .height(image_height),
-                    ),
-            )
-            .push(
-                Row::new()
-                    .spacing(10)
-                    .push(
-                        Image::new("resources/image.jpeg")
-                            .width(image_width)
-                            .height(image_height),
-                    )
-                    .push(
-                        Image::new("resources/image.jpeg")
-                            .width(image_width)
-                            .height(image_height),
-                    )
-                    .push(
-                        Image::new("resources/image.jpeg")
-                            .width(image_width)
-                            .height(image_height),
-                    ),
-            )
-            .into()
+                ui.image(egui::include_image!("../resources/image1.png"));
+            });
+        });
     }
 }
-
 fn randomize_cards(mut game_state: GameState) -> () {
     for n in 0..6 {
         game_state.card_order[n] = -1;

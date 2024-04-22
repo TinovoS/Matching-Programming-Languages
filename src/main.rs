@@ -1,8 +1,8 @@
-
-
 use eframe::egui::{self, include_image};
 use egui::ImageData;
 use std::path::Path;
+use std::{thread, time};
+
 const NUM_OF_CARDS: usize = 12;
 
 
@@ -32,6 +32,8 @@ struct GameState {
     correct_pairs: u8,
     card: i8,
     reset: bool,
+    background_pictures: [&'static str; 12],
+    background_picture: &'static str,
 
 }
 
@@ -41,15 +43,17 @@ impl GameState {
      fn new() -> Self {
         // Initialize the struct fields here
         let mut game_state = Self {
-            picked: [true; NUM_OF_CARDS],
+            picked: [false; NUM_OF_CARDS], //picked check which one is picked
             correct_order: [-1; NUM_OF_CARDS],
-            card_order: [-1; NUM_OF_CARDS],
-            card_picture: [""; NUM_OF_CARDS],
-            picked_count: 0,
-            pick_number: 0,
-            correct_pairs: 0,
+            card_order: [-1; NUM_OF_CARDS], //card order used in randomize
+            card_picture: [""; NUM_OF_CARDS],//card picture literally picture
+            picked_count: 0, // count how many cards are picked
+            pick_number: 0, 
+            correct_pairs: 0, //counts how many pairs are correct
             card: 0,
             reset: false,
+            background_pictures: [""; NUM_OF_CARDS],
+            background_picture: "",
         };
 
         // Initialize the state
@@ -59,46 +63,92 @@ impl GameState {
         game_state
     }
 }
-impl eframe::App for GameState {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    impl eframe::App for GameState {
+        fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 
-        let num_columns = 4;
-        let num_rows = 3;
-        //lets initialize game status
-        //------------------------------------
-        //------------------------------------
-        egui::CentralPanel::default().show(ctx, |ui| {
+            let num_columns = 4;
+            let num_rows = 3;
+            //lets initialize game status
+            //------------------------------------
+            //------------------------------------
+            egui::CentralPanel::default().show(ctx, |ui| {
 
-            let available_size = ui.available_size();
-            let min_col_width = available_size.x*0.99  / num_columns as f32;
-            let min_row_height = available_size.y*0.99  / num_rows as f32;
-
-            for n in 0..num_rows  {
-            egui::Grid::new(num_rows)
-                .num_columns(num_columns)
-                .min_col_width(min_col_width)
-                .min_row_height(min_row_height)
-                .max_col_width(min_col_width)
-                .show(ui, |mut row| {
-                    for m in 0..num_columns  { // Add 4 image buttons
-                        //inside my update function
-                        let img = row.ctx().load_texture(
-                            "my-image",
-                            get_image(&self.card_picture[n * num_columns + m], 0, 0, 100, 100),
-                            Default::default(),
-                        );
+                let available_size = ui.available_size();
+                let min_col_width = available_size.x*0.99  / num_columns as f32;
+                let min_row_height = available_size.y*0.99  / num_rows as f32;
 
 
-                        if row.add(egui::ImageButton::new(&img)).clicked() {
-                                
+
+                for n in 0..num_rows  {
+                egui::Grid::new(n)
+                    .num_columns(num_columns)
+                    .min_col_width(min_col_width)
+                    .min_row_height(min_row_height)
+                    .max_col_width(min_col_width)
+                    .show(ui, |mut row| {
+                        for m in 0..num_columns  { // Add 4 image buttons
+                            //inside my update function
+                        
+                            let background_img = row.ctx().load_texture(
+                                "my-image",
+                                get_image(&self.background_pictures[n * num_columns + m], 0, 0, 100, 100),
+                                Default::default(),
+                            );
+                            
+                            if row.add(egui::ImageButton::new(&background_img)).clicked()  {
+                                if self.picked_count==2{
+                                    //Here compare cards also reset cards to original
+                                    compare_cards(self);
+                                    reset_background_cards(self)
+                                }
+                                self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
+                                self.picked[n * num_columns + m] = true;
+                                self.picked_count +=1;
+                            }
+                            
                         }
-                       
-                    }
-                });
-            }
-        });
+                    });
+                }
+            });
+        }
     }
-}
+
+    fn compare_cards(game_state: &mut GameState) -> () {
+        let mut buffer: [&'static str; 2] = [""; 2];
+        let mut k = 0;
+        for i in 0..12 {
+            if game_state.picked[i] {
+                buffer[k] = game_state.background_pictures[i];
+                k +=1;
+            }
+        }
+
+
+        if buffer[0] == buffer[1]{
+            game_state.correct_pairs +=1;
+        }
+        // TODO
+        //ovde sad treba da se obrisu dva
+        // mozemo da stavimo da ne nestaju
+
+    }
+
+    fn reset_background_cards(game_state: &mut GameState) {
+        // Reset picked count
+        game_state.picked_count = 0;
+
+        for i in 0..12 {
+            game_state.picked[i] =false;
+        }
+        // Calculate the end time
+        thread::sleep(time::Duration::from_secs(1));
+
+            for i in 0..12 {
+                game_state.background_pictures[i as usize] =
+                    "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
+            }
+        
+    }
 
 fn randomize_cards(mut game_state: &mut GameState) -> () {
     for n in 0..12 {
@@ -124,6 +174,11 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
     game_state.card_picture[game_state.card_order[9] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/haskell.png";
     game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/prolog.png";
     game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/python.png";
+    game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
+    
+    for i in 0 .. 12 {
+        game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
+    }
 
     game_state.pick_number = 0;
     game_state.correct_pairs = 0;

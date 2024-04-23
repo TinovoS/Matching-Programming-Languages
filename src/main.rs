@@ -2,6 +2,7 @@ use eframe::egui::{self, include_image};
 use egui::ImageData;
 use std::path::Path;
 use std::{thread, time};
+use egui::{RichText, FontId, Color32};
 
 const NUM_OF_CARDS: usize = 12;
 
@@ -9,7 +10,9 @@ const NUM_OF_CARDS: usize = 12;
 fn main() -> Result<(), eframe::Error> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([1000.0, 1200.0]),
+        viewport: egui::ViewportBuilder::default()
+        .with_fullscreen(true)
+        .with_title("Matching Programming Languages"),
         ..Default::default()
     };
     
@@ -23,8 +26,8 @@ fn main() -> Result<(), eframe::Error> {
 
 #[derive(Default)]  
 struct GameState {
-    picked: [bool; 12 ],
-    correct_order: [i8; 12 ],
+    picked_globaly: [bool; 12 ],
+    picked_localy: [bool; 12 ],
     card_order: [i8; 12 ],
     card_picture: [&'static str; 12],
     picked_count: u8,
@@ -34,6 +37,7 @@ struct GameState {
     reset: bool,
     background_pictures: [&'static str; 12],
     background_picture: &'static str,
+    exit_picture: &'static str,
 
 }
 
@@ -43,8 +47,8 @@ impl GameState {
      fn new() -> Self {
         // Initialize the struct fields here
         let mut game_state = Self {
-            picked: [false; NUM_OF_CARDS], //picked check which one is picked
-            correct_order: [-1; NUM_OF_CARDS],
+            picked_localy: [false; NUM_OF_CARDS], //picked check which one is picked
+            picked_globaly: [false; NUM_OF_CARDS],
             card_order: [-1; NUM_OF_CARDS], //card order used in randomize
             card_picture: [""; NUM_OF_CARDS],//card picture literally picture
             picked_count: 0, // count how many cards are picked
@@ -54,6 +58,7 @@ impl GameState {
             reset: false,
             background_pictures: [""; NUM_OF_CARDS],
             background_picture: "",
+            exit_picture: "",
         };
 
         // Initialize the state
@@ -75,10 +80,50 @@ impl GameState {
 
                 let available_size = ui.available_size();
                 let min_col_width = available_size.x*0.99  / num_columns as f32;
-                let min_row_height = available_size.y*0.99  / num_rows as f32;
+                let min_row_height = available_size.y*0.80  / num_rows as f32;
 
 
+                //here we represent labels
+                egui::Grid::new("header")
+                    .num_columns(3)
+                    .min_col_width(available_size.x*0.99  / 3.0)
+                    //.min_row_height(min_row_height)
+                    //.max_col_width(available_size.x*0.99  / 3.0)
+                    .show(ui, |mut row| {
+                        let exit_img = row.ctx().load_texture(
+                            "my-image",
+                            get_image(&self.exit_picture, 0, 0, 100, 100),
+                            Default::default(),
+                        );
+                        let exit_button = egui::ImageButton::new(&exit_img);
+                        if row.add(exit_button).clicked() {
+                            row.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                        }
+                
+                        // Second column: Text label with bordered frame
+                       
 
+                        const GRAY: egui::Color32 = egui::Color32::from_rgb(38, 38, 38);
+                        
+
+                        let framed_text_label = egui::Frame::none()
+                        .inner_margin(egui::Margin::symmetric(200.0,0.0))
+                        .fill(GRAY)
+                        .show(row, |ui| {
+                            ui.label(RichText::new(self.correct_pairs.to_string()).font(FontId::proportional(40.0)));
+                        });
+
+                        // Third column: Another text label with bordered frame
+                        let another_text_label = "Another Text Here";
+                        let framed_another_text_label = egui::Frame::none()
+                        .inner_margin(egui::Margin::symmetric(200.0,0.0))
+                        .fill(GRAY)
+                        .show(row, |ui| {
+                            ui.label(RichText::new((6-self.correct_pairs).to_string()).font(FontId::proportional(40.0)));
+                        });
+                });
+
+                
                 for n in 0..num_rows  {
                 egui::Grid::new(n)
                     .num_columns(num_columns)
@@ -94,7 +139,10 @@ impl GameState {
                                 get_image(&self.background_pictures[n * num_columns + m], 0, 0, 100, 100),
                                 Default::default(),
                             );
-                            
+                            if self.picked_globaly[n * num_columns + m] {
+                                row.add(egui::Image::new(&background_img));
+                            }
+                            else {
                             if row.add(egui::ImageButton::new(&background_img)).clicked()  {
                                 if self.picked_count==2{
                                     //Here compare cards also reset cards to original
@@ -102,10 +150,11 @@ impl GameState {
                                     reset_background_cards(self)
                                 }
                                 self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
-                                self.picked[n * num_columns + m] = true;
+                                self.picked_localy[n * num_columns + m] = true;
+                                self.picked_globaly[n * num_columns + m] = true;
                                 self.picked_count +=1;
                             }
-                            
+                        }
                         }
                     });
                 }
@@ -117,7 +166,7 @@ impl GameState {
         let mut buffer: [&'static str; 2] = [""; 2];
         let mut k = 0;
         for i in 0..12 {
-            if game_state.picked[i] {
+            if game_state.picked_localy[i] {
                 buffer[k] = game_state.background_pictures[i];
                 k +=1;
             }
@@ -126,6 +175,14 @@ impl GameState {
 
         if buffer[0] == buffer[1]{
             game_state.correct_pairs +=1;
+
+        }else {
+            for i in 0..12 {
+                if game_state.picked_localy[i]{
+                    game_state.picked_globaly[i] = false;
+                }
+            }
+
         }
         // TODO
         //ovde sad treba da se obrisu dva
@@ -138,14 +195,16 @@ impl GameState {
         game_state.picked_count = 0;
 
         for i in 0..12 {
-            game_state.picked[i] =false;
+            game_state.picked_localy[i] =false;
         }
         // Calculate the end time
         thread::sleep(time::Duration::from_secs(1));
 
             for i in 0..12 {
-                game_state.background_pictures[i as usize] =
-                    "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
+                if game_state.picked_globaly[i] == false {
+                        game_state.background_pictures[i as usize] =
+                            "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
+                }
             }
         
     }
@@ -160,7 +219,7 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
             x = (rand::random::<i8>()).rem_euclid(12);
         }
         game_state.card_order[n] = x;
-        game_state.picked[n] = false;
+        game_state.picked_localy[n] = false;
     }
     game_state.card_picture[game_state.card_order[0] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/haskell.png";
     game_state.card_picture[game_state.card_order[1] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/java.png";
@@ -175,7 +234,7 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
     game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/prolog.png";
     game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/python.png";
     game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
-    
+    game_state.exit_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/exit.png";
     for i in 0 .. 12 {
         game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
     }

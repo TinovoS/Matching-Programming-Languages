@@ -26,6 +26,7 @@ pub struct GameState {
     background_pictures: [&'static str; NUM_OF_CARDS],
     background_picture: &'static str,
     exit_picture: &'static str,
+    play:bool,
 
 }
 
@@ -42,12 +43,13 @@ impl GameState {
             picked_count: 0, // count how many cards are picked
             pick_number: 0, 
             correct_pairs: 0, //counts how many pairs are correct
-            card: 0,
-            reset: false,
-            reset_count: 0,
-            background_pictures: [""; NUM_OF_CARDS],
-            background_picture: "",
-            exit_picture: "",
+            card: 0, 
+            reset: false, //maybe will use it
+            reset_count: 0, // this counts frames when 2 cards are clicked so they reset after certain amout of frames
+            background_pictures: [""; NUM_OF_CARDS], // foreach card background 
+            background_picture: "", // card picture for background
+            exit_picture: "", // picture for imagebutton exit
+            play: false, // if play is clicked then turn to true and game is on
         };
 
         // Initialize the state
@@ -60,98 +62,125 @@ impl GameState {
     impl eframe::App for GameState {
         fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 
-            if self.picked_count == 2{
-                self.reset_count += 1;  // this imiates  count like when it counts to 1000 and 
-            }
            
-            let num_columns = 6;
-            let num_rows = 3;
 
             //lets initialize game status
             //------------------------------------
             //------------------------------------
             egui::CentralPanel::default().show(ctx, |ui| {
 
-                let available_size = ui.available_size();
-                let min_col_width = available_size.x*0.99  / num_columns as f32;
-                let min_row_height = available_size.y*0.80  / num_rows as f32;
-
-
-                //here we represent labels
-                egui::Grid::new("header")
-                    .num_columns(3)
-                    .min_col_width(available_size.x*0.99  / 3.0)
-                    //.min_row_height(min_row_height)
-                    //.max_col_width(available_size.x*0.99  / 3.0)
-                    .show(ui, |mut row| {
-                        let exit_img = row.ctx().load_texture(
-                            "my-image",
-                            get_image(&self.exit_picture, 0, 0, 100, 100),
-                            Default::default(),
-                        );
-                        let exit_button = egui::ImageButton::new(&exit_img);
-                        if row.add(exit_button).clicked() {
-                            row.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
-                        }
+                if self.play {
+                    if self.picked_count == 2{
+                        self.reset_count += 1;  // this imiates  count like when it counts to 1000 and 
+                    }
                 
-                        // Second column: Text label with bordered frame
-                       
+                    let num_columns = 6;
+                    let num_rows = 3;
 
-                        const GRAY: egui::Color32 = egui::Color32::from_rgb(38, 38, 38);
-                        
+                    let available_size = ctx.screen_rect().size();
+                    let min_col_width = available_size.x*0.99  / num_columns as f32;
+                    let min_row_height = available_size.y*0.80  / num_rows as f32;
 
-                        let framed_text_label = egui::Frame::none()
-                        .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
-                        .fill(GRAY)
-                        .show(row, |ui| {
-                            ui.label(RichText::new(self.correct_pairs.to_string()).font(FontId::proportional(40.0)));
-                        });
 
-                        // Third column: Another text label with bordered frame
-                        let another_text_label = "Another Text Here";
-                        let framed_another_text_label = egui::Frame::none()
-                        .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
-                        .fill(GRAY)
-                        .show(row, |ui| {
-                            ui.label(RichText::new((self.reset_count).to_string()).font(FontId::proportional(40.0)));
-                        });
-                });
+                    //here we represent labels
+                    egui::Grid::new("header")
+                        .num_columns(3)
+                        .min_col_width(available_size.x*0.99  / 3.0)
+                        //.min_row_height(min_row_height)
+                        //.max_col_width(available_size.x*0.99  / 3.0)
+                        .show(ui, |mut row| {
 
-                
-                for n in 0..num_rows  {
-                egui::Grid::new(n)
-                    .num_columns(num_columns)
-                    .min_col_width(min_col_width)
-                    .min_row_height(min_row_height)
-                    .max_col_width(min_col_width)
-                    .show(ui, |mut row| {
-                        for m in 0..num_columns  { // Add 4 image buttons
-                            //inside my update function
-                        
-                            let mut background_img = row.ctx().load_texture(
+                            const GRAY: egui::Color32 = egui::Color32::from_rgb(38, 38, 38);
+
+                            let exit_img = row.ctx().load_texture(
                                 "my-image",
-                                get_image(&self.background_pictures[n * num_columns + m], 0, 0, 100, 100),
+                                get_image(&self.exit_picture, 0, 0, 100, 100),
                                 Default::default(),
                             );
-                            if self.picked_globaly[n * num_columns + m] {
-                                row.add(egui::Image::new(&background_img));
+                        
+                            let exit_button = egui::ImageButton::new(&exit_img);
+                            if row.add(exit_button).clicked() {
+                                self.play = false;
                             }
-                            else if row.add(egui::ImageButton::new(&background_img)).clicked()  {
-                                if self.picked_count == 2{
-                                    reset_background_cards(self);
-                                }
-                                
-                                self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
-                                self.picked_localy[n * num_columns + m] = true;
-                                self.picked_globaly[n * num_columns + m] = true;
-                                self.picked_count +=1;
-                                
-                            }
+                            
+                        
+                            let framed_text_label = egui::Frame::none()
+                            .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
+                            .fill(GRAY)
+                            .show(row, |ui| {
+                                ui.label(RichText::new(self.correct_pairs.to_string()).font(FontId::proportional(40.0)));
+                            });
 
-                            if self.picked_count == 2 && self.reset_count==3{
-                                reset_background_cards(self);
+                            let another_text_label = "Another Text Here";
+                            let framed_another_text_label = egui::Frame::none()
+                            .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
+                            .fill(GRAY)
+                            .show(row, |ui| {
+                                ui.label(RichText::new((self.reset_count).to_string()).font(FontId::proportional(40.0)));
+                            });
+                        });
+
+                    
+                    for n in 0..num_rows  {
+                        egui::Grid::new(n)
+                            .num_columns(num_columns)
+                            .min_col_width(min_col_width)
+                            .min_row_height(min_row_height)
+                            .max_col_width(min_col_width)
+                            .show(ui, |mut row| {
+                                for m in 0..num_columns  { 
+
+                                    let mut background_img = row.ctx().load_texture(
+                                        "my-image",
+                                        get_image(&self.background_pictures[n * num_columns + m], 0, 0, 100, 100),
+                                        Default::default(),
+                                    );
+
+                                    if self.picked_globaly[n * num_columns + m] {
+                                        row.add(egui::Image::new(&background_img));
+                                    }
+
+                                    else if row.add(egui::ImageButton::new(&background_img)).clicked()  {
+                                        if self.picked_count == 2{
+                                            reset_background_cards(self);
+                                        }
+                                        
+                                        self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
+                                        self.picked_localy[n * num_columns + m] = true;
+                                        self.picked_globaly[n * num_columns + m] = true;
+                                        self.picked_count +=1;
+                                        
+                                    }
+
+                                    if self.picked_count == 2 && self.reset_count==6{
+                                        reset_background_cards(self);
+                                    }
+                                }
+                            });
+                    }
+                }
+                else {
+                    ui.horizontal(|ui| {
+                        let available_size = ctx.screen_rect().size();
+                        let min_col_width = available_size.x  / 2 as f32;
+                        let min_row_height = available_size.y as f32;
+
+                        ui.vertical(|ui| {
+                            if !self.play {                                
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Play").size(200.0).strong())).clicked() {
+                                    self.play = true;
+
+                                }
+                            } else {
+                                ui.label("Game is playing...");
                             }
-                        }
+                        });                        
+
+                        ui.vertical(|ui| {
+                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Quit").size(200.0).strong())).clicked() {
+                                std::process::exit(0);
+                            }
+                        });
                     });
                 }
             });
@@ -188,20 +217,20 @@ impl GameState {
 
     fn reset_background_cards(game_state: &mut GameState) {
         compare_cards(game_state);
+
         // Reset picked count
         game_state.picked_count = 0;
         game_state.reset_count = 0;
         for i in 0..NUM_OF_CARDS {
             game_state.picked_localy[i] =false;
         }
-        // Calculate the end time
 
-            for i in 0..NUM_OF_CARDS {
-                if game_state.picked_globaly[i] == false {
-                        game_state.background_pictures[i as usize] =
-                            "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
-                }
+        for i in 0..NUM_OF_CARDS {
+            if game_state.picked_globaly[i] == false {
+                    game_state.background_pictures[i as usize] =
+                        "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/background.png";
             }
+        }
         
     }
 

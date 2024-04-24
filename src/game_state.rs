@@ -22,6 +22,7 @@ pub struct GameState {
     correct_pairs: u8,
     card: i8,
     reset: bool,
+    reset_count: i64,
     background_pictures: [&'static str; NUM_OF_CARDS],
     background_picture: &'static str,
     exit_picture: &'static str,
@@ -43,6 +44,7 @@ impl GameState {
             correct_pairs: 0, //counts how many pairs are correct
             card: 0,
             reset: false,
+            reset_count: 0,
             background_pictures: [""; NUM_OF_CARDS],
             background_picture: "",
             exit_picture: "",
@@ -58,8 +60,13 @@ impl GameState {
     impl eframe::App for GameState {
         fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 
+            if self.picked_count == 2{
+                self.reset_count += 1;  // this imiates  count like when it counts to 1000 and 
+            }
+           
             let num_columns = 6;
             let num_rows = 3;
+
             //lets initialize game status
             //------------------------------------
             //------------------------------------
@@ -94,7 +101,7 @@ impl GameState {
                         
 
                         let framed_text_label = egui::Frame::none()
-                        .inner_margin(egui::Margin::symmetric(200.0,0.0))
+                        .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
                         .fill(GRAY)
                         .show(row, |ui| {
                             ui.label(RichText::new(self.correct_pairs.to_string()).font(FontId::proportional(40.0)));
@@ -103,10 +110,10 @@ impl GameState {
                         // Third column: Another text label with bordered frame
                         let another_text_label = "Another Text Here";
                         let framed_another_text_label = egui::Frame::none()
-                        .inner_margin(egui::Margin::symmetric(200.0,0.0))
+                        .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
                         .fill(GRAY)
                         .show(row, |ui| {
-                            ui.label(RichText::new((6-self.correct_pairs).to_string()).font(FontId::proportional(40.0)));
+                            ui.label(RichText::new((self.reset_count).to_string()).font(FontId::proportional(40.0)));
                         });
                 });
 
@@ -114,7 +121,7 @@ impl GameState {
                 for n in 0..num_rows  {
                 egui::Grid::new(n)
                     .num_columns(num_columns)
-                    //.min_col_width(min_col_width)
+                    .min_col_width(min_col_width)
                     .min_row_height(min_row_height)
                     .max_col_width(min_col_width)
                     .show(ui, |mut row| {
@@ -132,21 +139,18 @@ impl GameState {
                             else if row.add(egui::ImageButton::new(&background_img)).clicked()  {
                                 if self.picked_count == 2{
                                     reset_background_cards(self);
-
                                 }
                                 
                                 self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
                                 self.picked_localy[n * num_columns + m] = true;
                                 self.picked_globaly[n * num_columns + m] = true;
                                 self.picked_count +=1;
-
-                                if self.picked_count == 2{
-                                    compare_cards(self);
-                                }
-                                
                                 
                             }
-                            
+
+                            if self.picked_count == 2 && self.reset_count==3{
+                                reset_background_cards(self);
+                            }
                         }
                     });
                 }
@@ -183,14 +187,14 @@ impl GameState {
     }
 
     fn reset_background_cards(game_state: &mut GameState) {
+        compare_cards(game_state);
         // Reset picked count
         game_state.picked_count = 0;
-
+        game_state.reset_count = 0;
         for i in 0..NUM_OF_CARDS {
             game_state.picked_localy[i] =false;
         }
         // Calculate the end time
-        thread::sleep(time::Duration::from_secs(1));
 
             for i in 0..NUM_OF_CARDS {
                 if game_state.picked_globaly[i] == false {

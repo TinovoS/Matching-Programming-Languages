@@ -199,11 +199,15 @@ impl GameState {
                                         self.play = true;
                                         self.show_popup = false;
                                         self.image_size = 100;
+                                        randomize_cards(self);
+
                                     }
                                     if ui.button("200x200").clicked() {
                                         self.play = true;
                                         self.show_popup = false;
                                         self.image_size = 200;
+                                        randomize_cards(self);
+
                                     }
                                 });
                         });
@@ -255,8 +259,13 @@ impl GameState {
 
         for i in 0..NUM_OF_CARDS {
             if game_state.picked_globaly[i] == false {
-                    game_state.background_pictures[i as usize] =
-                        "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
+                    if game_state.image_size == 200 {
+                        game_state.background_pictures[i as usize] =
+                            "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
+                    } else if game_state.image_size == 100{
+                        game_state.background_pictures[i as usize] =
+                            "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/background.png";  
+                    }
             }
         }
         
@@ -274,29 +283,55 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
         game_state.card_order[n] = x;
         game_state.picked_localy[n] = false;
     }
-    game_state.card_picture[game_state.card_order[0] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/haskell.png";
-    game_state.card_picture[game_state.card_order[1] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/java.png";
-    game_state.card_picture[game_state.card_order[2] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/python.png";
-    game_state.card_picture[game_state.card_order[3] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/kotlin.png";
-    game_state.card_picture[game_state.card_order[4] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/prolog.png";
-    game_state.card_picture[game_state.card_order[5] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/rust.png";
-    game_state.card_picture[game_state.card_order[6] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/kotlin.png";
-    game_state.card_picture[game_state.card_order[7] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/java.png";
-    game_state.card_picture[game_state.card_order[8] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/rust.png";
-    game_state.card_picture[game_state.card_order[9] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/haskell.png";
-    game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/prolog.png";
-    game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/python.png";
-    game_state.card_picture[game_state.card_order[12] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/scala.png";
-    game_state.card_picture[game_state.card_order[13] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/scala.png";
-    game_state.card_picture[game_state.card_order[14] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/c++.png";
-    game_state.card_picture[game_state.card_order[15] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/c++.png";
-    game_state.card_picture[game_state.card_order[16] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/lisp.png";
-    game_state.card_picture[game_state.card_order[17] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/lisp.png";
-
-    game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
-    game_state.exit_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/exit.png";
-    for i in 0 .. NUM_OF_CARDS {
-        game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
+    if game_state.image_size == 200{
+        game_state.card_picture[game_state.card_order[0] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/haskell.png";
+        game_state.card_picture[game_state.card_order[1] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/java.png";
+        game_state.card_picture[game_state.card_order[2] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/python.png";
+        game_state.card_picture[game_state.card_order[3] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/kotlin.png";
+        game_state.card_picture[game_state.card_order[4] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/prolog.png";
+        game_state.card_picture[game_state.card_order[5] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/rust.png";
+        game_state.card_picture[game_state.card_order[6] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/kotlin.png";
+        game_state.card_picture[game_state.card_order[7] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/java.png";
+        game_state.card_picture[game_state.card_order[8] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/rust.png";
+        game_state.card_picture[game_state.card_order[9] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/haskell.png";
+        game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/prolog.png";
+        game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/python.png";
+        game_state.card_picture[game_state.card_order[12] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/scala.png";
+        game_state.card_picture[game_state.card_order[13] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/scala.png";
+        game_state.card_picture[game_state.card_order[14] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/c++.png";
+        game_state.card_picture[game_state.card_order[15] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/c++.png";
+        game_state.card_picture[game_state.card_order[16] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/lisp.png";
+        game_state.card_picture[game_state.card_order[17] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/lisp.png";
+        game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
+        game_state.exit_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/exit.png";
+        for i in 0 .. NUM_OF_CARDS {
+            game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
+        }
+    }
+    else if game_state.image_size == 100{
+        game_state.card_picture[game_state.card_order[0] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/haskell.png";
+        game_state.card_picture[game_state.card_order[1] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/java.png";
+        game_state.card_picture[game_state.card_order[2] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/python.png";
+        game_state.card_picture[game_state.card_order[3] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/kotlin.png";
+        game_state.card_picture[game_state.card_order[4] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/prolog.png";
+        game_state.card_picture[game_state.card_order[5] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/rust.png";
+        game_state.card_picture[game_state.card_order[6] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/kotlin.png";
+        game_state.card_picture[game_state.card_order[7] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/java.png";
+        game_state.card_picture[game_state.card_order[8] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/rust.png";
+        game_state.card_picture[game_state.card_order[9] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/haskell.png";
+        game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/prolog.png";
+        game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/python.png";
+        game_state.card_picture[game_state.card_order[12] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/scala.png";
+        game_state.card_picture[game_state.card_order[13] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/scala.png";
+        game_state.card_picture[game_state.card_order[14] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/c++.png";
+        game_state.card_picture[game_state.card_order[15] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/c++.png";
+        game_state.card_picture[game_state.card_order[16] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/lisp.png";
+        game_state.card_picture[game_state.card_order[17] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/lisp.png";
+        game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/background.png";
+        game_state.exit_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/exit.png";
+        for i in 0 .. NUM_OF_CARDS {
+            game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/background.png";
+        }
     }
 
     game_state.pick_number = 0;

@@ -7,11 +7,11 @@ use std::{thread, time};
 use egui::{RichText, FontId, Color32};
 
 
-const NUM_OF_CARDS: usize = 18;
+const NUM_OF_CARDS: usize = 24;
 
 
 
-#[derive(Default)]  
+#[derive(Default)]
 pub struct GameState {
     picked_globaly: [bool; NUM_OF_CARDS ],
     picked_localy: [bool; NUM_OF_CARDS ],
@@ -27,14 +27,19 @@ pub struct GameState {
     background_picture: &'static str,
     exit_picture: &'static str,
     play:bool,
+    normal:bool,
     show_popup: bool,
     image_size: i64,
+    level: i8,
+    number_of_cards: usize,
+    victory: bool,
+    victory_picture: &'static str
 }
 
-    
+
 impl GameState {
     /// Called once before the first frame.
-     pub fn new() -> Self {
+    pub fn new() -> Self {
         // Initialize the struct fields here
         let mut game_state = Self {
             picked_localy: [false; NUM_OF_CARDS], //picked check which one is picked
@@ -42,301 +47,420 @@ impl GameState {
             card_order: [-1; NUM_OF_CARDS], //card order used in randomize
             card_picture: [""; NUM_OF_CARDS],//card picture literally picture
             picked_count: 0, // count how many cards are picked
-            pick_number: 0, 
+            pick_number: 0,
             correct_pairs: 0, //counts how many pairs are correct
-            card: 0, 
+            card: 0,
             reset: false, //maybe will use it
             reset_count: 0, // this counts frames when 2 cards are clicked so they reset after certain amout of frames
             background_pictures: [""; NUM_OF_CARDS], // foreach card background 
             background_picture: "", // card picture for background
             exit_picture: "", // picture for imagebutton exit
             play: false, // if play is clicked then turn to true and game is on
+            normal: true,
             show_popup: false,
             image_size: 0,
+            level: 1,
+            number_of_cards: 12,
+            victory: false,
+            victory_picture: "resources/victory.png",
         };
 
         // Initialize the state
-        randomize_cards(&mut game_state);
-
         // Return the initialized GameState
         game_state
     }
 }
-    impl eframe::App for GameState {
-        fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-
-           
-
-            //lets initialize game status
-            //------------------------------------
-            //------------------------------------
-            egui::CentralPanel::default().show(ctx, |ui| {
-
-                if self.play {
-                    if self.picked_count == 2{
-                        self.reset_count += 1;  // this imiates  count like when it counts to 1000 and 
-                    }
-                
-                    let num_columns = 6;
-                    let num_rows = 3;
-
-                    let available_size = ctx.screen_rect().size();
-                    let min_col_width = available_size.x*0.99  / num_columns as f32;
-                    let min_row_height = available_size.y*0.80  / num_rows as f32;
+impl eframe::App for GameState {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 
 
-                    //here we represent labels
-                    egui::Grid::new("header")
-                        .num_columns(3)
-                        .min_col_width(available_size.x*0.99  / 3.0)
-                        //.min_row_height(min_row_height)
-                        //.max_col_width(available_size.x*0.99  / 3.0)
-                        .show(ui, |mut row| {
 
-                            const GRAY: egui::Color32 = egui::Color32::from_rgb(38, 38, 38);
+        //lets initialize game status
+        //------------------------------------
+        //------------------------------------
+        egui::CentralPanel::default().show(ctx, |ui| {
+            if self.victory{
 
-                            let exit_img = row.ctx().load_texture(
-                                "my-image",
-                                get_image(&self.exit_picture, 0, 0, 100, 100),
-                                Default::default(),
-                            );
-                        
-                            let exit_button = egui::ImageButton::new(&exit_img);
-                            if row.add(exit_button).clicked() {
-                                self.play = false;
-                            }
-                            
-                        
-                            let framed_text_label = egui::Frame::none()
+                let available_size = ctx.screen_rect().size();
+                egui::Grid::new("victory")
+                    .num_columns(1)
+                    .min_col_width(available_size.x)
+                //.min_row_height(min_row_height)
+                    .max_col_width(available_size.x)
+                    .show(ui, |mut row| {
+
+                        const GRAY: egui::Color32 = egui::Color32::from_rgb(38, 38, 38);
+
+                        let victory = row.ctx().load_texture(
+                            "my-image",
+                            get_image(&self.victory_picture, 0, 0, 100, 100),
+                            Default::default(),
+                        );
+
+                        let victory_button = egui::ImageButton::new(&victory);
+                        if row.add(victory_button).clicked() {
+                            full_reset(self);
+                            self.play = false;
+                            self.victory=false;
+                        }
+                    });
+            }
+            else if self.play {
+
+                if self.picked_count == 2{
+                    self.reset_count += 1;  // this imiates  count like when it counts to 1000 and
+                }
+                let mut num_rows:usize =0;
+                let num_columns = 6;
+                if(self.normal) {
+                    num_rows = 1 + self.level as usize;
+
+                }
+                else {
+                    num_rows = 3;
+                }
+                let available_size = ctx.screen_rect().size();
+                let min_col_width = available_size.x*0.99  / num_columns as f32;
+                let min_row_height = available_size.y*0.80  / num_rows as f32;
+
+
+                //here we represent labels
+                egui::Grid::new("header")
+                    .num_columns(3)
+                    .min_col_width(available_size.x*0.99  / 3.0)
+                    //.min_row_height(min_row_height)
+                    //.max_col_width(available_size.x*0.99  / 3.0)
+                    .show(ui, |mut row| {
+
+                        const GRAY: egui::Color32 = egui::Color32::from_rgb(38, 38, 38);
+
+                        let exit_img = row.ctx().load_texture(
+                            "my-image",
+                            get_image(&self.exit_picture, 0, 0, 100, 100),
+                            Default::default(),
+                        );
+
+                        let exit_button = egui::ImageButton::new(&exit_img);
+                        if row.add(exit_button).clicked() {
+                            full_reset(self);
+                            self.play = false;
+                        }
+
+
+                        let framed_text_label = egui::Frame::none()
                             .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
                             .fill(GRAY)
                             .show(row, |ui| {
                                 ui.label(RichText::new(self.correct_pairs.to_string()).font(FontId::proportional(40.0)));
                             });
 
-                            let another_text_label = "Another Text Here";
-                            let framed_another_text_label = egui::Frame::none()
+                        let another_text_label = "Another Text Here";
+                        let framed_another_text_label = egui::Frame::none()
                             .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
                             .fill(GRAY)
                             .show(row, |ui| {
-                                ui.label(RichText::new((self.reset_count).to_string()).font(FontId::proportional(40.0)));
+                                ui.label(RichText::new((self.level).to_string()).font(FontId::proportional(40.0)));
                             });
-                        });
-
-                    
-                    for n in 0..num_rows  {
-                        egui::Grid::new(n)
-                            .num_columns(num_columns)
-                            .min_col_width(min_col_width)
-                            .min_row_height(min_row_height)
-                            .max_col_width(min_col_width)
-                            .show(ui, |mut row| {
-                                for m in 0..num_columns  { 
-
-                                    let mut background_img = row.ctx().load_texture(
-                                        "my-image",
-                                        get_image(&self.background_pictures[n * num_columns + m], 0, 0, 100, 100),
-                                        Default::default(),
-                                    );
-
-                                    if self.picked_globaly[n * num_columns + m] {
-                                        row.add(egui::Image::new(&background_img));
-                                    }
-
-                                    else if row.add(egui::ImageButton::new(&background_img)).clicked()  {
-                                        if self.picked_count == 2{
-                                            reset_background_cards(self);
-                                        }
-                                        
-                                        self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
-                                        self.picked_localy[n * num_columns + m] = true;
-                                        self.picked_globaly[n * num_columns + m] = true;
-                                        self.picked_count +=1;
-                                        
-                                    }
-
-                                    if self.picked_count == 2 && self.reset_count==6{
-                                        reset_background_cards(self);
-                                    }
-                                }
-                            });
-                    }
-                }
-                else {
-                    ui.horizontal(|ui| {
-                        let available_size = ctx.screen_rect().size();
-                        let min_col_width = available_size.x  / 2 as f32;
-                        let min_row_height = available_size.y as f32;
-
-                        ui.vertical(|ui| {
-                            if !self.play {                                
-                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Play").size(200.0).strong())).clicked() {
-                                    self.show_popup = true;
-
-                                }
-                            }
-                            else {
-                                ui.label("Game is playing...");
-                            }
-                        });                        
-
-                        ui.vertical(|ui| {
-                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Quit").size(200.0).strong())).clicked() {
-                                std::process::exit(0);
-                            }
-                        });
                     });
 
-                    if self.show_popup {
-                        
-                        ui.horizontal_centered(|ui| {
-                            egui::Window::new("Popup")
-                                .default_size([700.0, 700.0]) 
-                                .min_size([700.0, 700.0])// Change the size as needed
-                                .show(ui.ctx(), |ui| {
-                                    ui.label("This is a centered popup window!");
-                                    if ui.button("100x100").clicked() {
-                                        self.play = true;
-                                        self.show_popup = false;
-                                        self.image_size = 100;
-                                        randomize_cards(self);
 
-                                    }
-                                    if ui.button("200x200").clicked() {
-                                        self.play = true;
-                                        self.show_popup = false;
-                                        self.image_size = 200;
-                                        randomize_cards(self);
+                for n in 0..num_rows  {
+                    egui::Grid::new(n)
+                        .num_columns(num_columns)
+                        .min_col_width(min_col_width)
+                        .min_row_height(min_row_height)
+                        .max_col_width(min_col_width)
+                        .show(ui, |mut row| {
+                            for m in 0..num_columns  {
+                                if(self.picked_count == self.number_of_cards as u8 / 2){
 
+                                }
+                                let mut background_img = row.ctx().load_texture(
+                                    "my-image",
+                                    get_image(&self.background_pictures[n * num_columns + m], 0, 0, 100, 100),
+                                    Default::default(),
+                                );
+
+                                if self.picked_globaly[n * num_columns + m] {
+                                    row.add(egui::Image::new(&background_img));
+                                }
+
+                                else if row.add(egui::ImageButton::new(&background_img)).clicked()  {
+                                    if self.picked_count == 2{
+                                        reset_background_cards(self);
                                     }
-                                });
+
+                                    self.background_pictures[n * num_columns + m] = self.card_picture[n * num_columns + m];
+                                    self.picked_localy[n * num_columns + m] = true;
+                                    self.picked_globaly[n * num_columns + m] = true;
+                                    self.picked_count +=1;
+
+                                }
+
+
+                                if self.picked_count == 2 && self.reset_count==6{
+                                    reset_background_cards(self);
+                                }
+
+                            }
                         });
-                    }
-                }
-
-
-            });
-        }
-    }
-
-    fn compare_cards(game_state: &mut GameState) -> () {
-        let mut buffer: [&'static str; 2] = [""; 2];
-        let mut k: usize = 0;
-        for i in 0..NUM_OF_CARDS {
-            if game_state.picked_localy[i] {
-                buffer[k] = game_state.background_pictures[i];
-                k +=1;
-            }
-        }
-
-
-        if buffer[0] == buffer[1]{
-            game_state.correct_pairs +=1;
-
-        }else {
-            for i in 0..NUM_OF_CARDS {
-                if game_state.picked_localy[i]{
-                    game_state.picked_globaly[i] = false;
                 }
             }
+            else {
+                ui.horizontal(|ui| {
+                    let available_size = ctx.screen_rect().size();
+                    let min_col_width = available_size.x  / 3 as f32;
+                    let min_row_height = available_size.y as f32;
 
+                    ui.vertical(|ui| {
+                        if !self.play {
+                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Normal").size(200.0).strong())).clicked() {
+                                self.show_popup = true;
+                                self.normal = true;
+                                self.level = 1;
+                                self.number_of_cards = 12;
+                                // Initialize the state
+                                randomize_cards(self);
+                            }
+                        }
+                        else {
+                            ui.label("Game is playing...");
+                        }
+                    });
+                    ui.vertical(|ui| {
+                        if !self.play {
+                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Extreme").size(200.0).strong())).clicked() {
+                                self.show_popup = true;
+                                self.normal = false;
+                                self.number_of_cards = 18;
+                                self.level = 3;
+                                randomize_cards(self);
+
+                            }
+                        }
+                        else {
+                            ui.label("Game is playing...");
+                        }
+                    });
+                    ui.vertical(|ui| {
+                        if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Quit").size(200.0).strong())).clicked() {
+                            std::process::exit(0);
+                        }
+                    });
+
+                });
+                if self.show_popup {
+
+                    ui.horizontal_centered(|ui| {
+                        egui::Window::new("Popup")
+                            .default_size([700.0, 700.0])
+                            .min_size([700.0, 700.0])// Change the size as needed
+                            .show(ui.ctx(), |ui| {
+                                ui.label("This is a centered popup window!");
+                                if ui.button("100x100").clicked() {
+                                    self.play = true;
+                                    self.show_popup = false;
+                                    self.image_size = 100;
+                                    randomize_cards(self);
+
+                                }
+                                if ui.button("200x200").clicked() {
+                                    self.play = true;
+                                    self.show_popup = false;
+                                    self.image_size = 200;
+                                    randomize_cards(self);
+
+                                }
+                            });
+                    });
+                }
+            }
+
+
+        });
+    }
+}
+
+fn compare_cards(game_state: &mut GameState) -> () {
+    let mut buffer: [&'static str; 2] = [""; 2];
+    let mut k: usize = 0;
+    for i in 0..game_state.number_of_cards {
+        if game_state.picked_localy[i] {
+            buffer[k] = game_state.background_pictures[i];
+            k +=1;
         }
-        // TODO
-        //ovde sad treba da se obrisu dva
-        // mozemo da stavimo da ne nestaju
-
     }
 
-    fn reset_background_cards(game_state: &mut GameState) {
-        compare_cards(game_state);
 
-        // Reset picked count
-        game_state.picked_count = 0;
-        game_state.reset_count = 0;
-        for i in 0..NUM_OF_CARDS {
-            game_state.picked_localy[i] =false;
+    if buffer[0] == buffer[1]{
+        game_state.correct_pairs +=1;
+        if game_state.correct_pairs == (game_state.number_of_cards as u8) /2 && game_state.level < 3{
+            next_level(game_state);
+            game_state.level += 1;
+            game_state.number_of_cards+=6;
+            randomize_cards(game_state);
+        }
+        else if game_state.correct_pairs == (game_state.number_of_cards as u8) /2 && game_state.level == 3{
+            game_state.victory = true;
+        }
+        else if(!game_state.normal){
+            randomize_cards(game_state);
         }
 
-        for i in 0..NUM_OF_CARDS {
-            if game_state.picked_globaly[i] == false {
-                    if game_state.image_size == 200 {
-                        game_state.background_pictures[i as usize] =
-                            "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
-                    } else if game_state.image_size == 100{
-                        game_state.background_pictures[i as usize] =
-                            "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/background.png";  
-                    }
+    }else {
+        for i in 0..game_state.number_of_cards {
+            if game_state.picked_localy[i]{
+                game_state.picked_globaly[i] = false;
             }
         }
-        
+
     }
 
+
+    // TODO
+    //ovde sad treba da se obrisu dva
+    // mozemo da stavimo da ne nestaju
+
+}
+
+fn reset_background_cards(game_state: &mut GameState) {
+    compare_cards(game_state);
+
+    // Reset picked count
+    game_state.picked_count = 0;
+    game_state.reset_count = 0;
+    for i in 0..game_state.number_of_cards {
+        game_state.picked_localy[i] =false;
+    }
+
+    for i in 0..game_state.number_of_cards {
+        if game_state.picked_globaly[i] == false {
+            if game_state.image_size == 200 {
+                game_state.background_pictures[i as usize] =
+                    "resources/200x200/background.png";
+            } else if game_state.image_size == 100{
+                game_state.background_pictures[i as usize] =
+                    "resources/100x100/background.png";
+            }
+        }
+    }
+
+}
+fn full_reset(mut game_state: &mut GameState) -> () {
+    game_state.pick_number = 0;
+    game_state.correct_pairs = 0;
+    game_state.card = -1;
+    game_state.picked_localy = [false; NUM_OF_CARDS];
+    game_state.picked_globaly= [false; NUM_OF_CARDS];
+    game_state.card_order= [-1; NUM_OF_CARDS]; //card order used in randomize
+    game_state.picked_count= 0; // count how many cards are picked
+    game_state.reset= false; //maybe will use it
+    game_state.reset_count= 0; // this counts frames when 2 cards are clicked so they reset after certain amout of frames
+    game_state.play= false; // if play is clicked then turn to true and game is on
+    game_state.normal= true;
+    game_state.show_popup= false;
+    game_state.level= 1;
+    game_state.victory = false;
+}
+fn next_level(mut game_state: &mut GameState) -> () {
+    game_state.pick_number = 0;
+    game_state.correct_pairs = 0;
+    game_state.card = -1;
+    game_state.picked_localy = [false; NUM_OF_CARDS];
+    game_state.picked_globaly= [false; NUM_OF_CARDS];
+    game_state.card_order= [-1; NUM_OF_CARDS]; //card order used in randomize
+    game_state.picked_count= 0; // count how many cards are picked
+    game_state.reset_count= 0; // this counts frames when 2 cards are clicked so they reset after certain amout of frames
+}
 fn randomize_cards(mut game_state: &mut GameState) -> () {
-    for n in 0..NUM_OF_CARDS {
-        game_state.card_order[n] = -1;
+    for n in 0..game_state.number_of_cards {
+            if (game_state.card_order[n] != -1 && !game_state.picked_globaly[game_state.card_order[n] as usize]) {
+                game_state.card_order[n] = -1;
+        }
     }
-    for n in 0..NUM_OF_CARDS {
-        let mut x = (rand::random::<i8>()).rem_euclid(18);
+    for n in 0..game_state.number_of_cards {
+        if (game_state.card_order[n] != -1) {continue;}
+        let mut x = (rand::random::<i8>()).rem_euclid(game_state.number_of_cards as i8);
         while game_state.card_order.contains(&x) {
-            x = (rand::random::<i8>()).rem_euclid(18);
+            x = (rand::random::<i8>()).rem_euclid(game_state.number_of_cards as i8);
         }
         game_state.card_order[n] = x;
         game_state.picked_localy[n] = false;
     }
     if game_state.image_size == 200{
-        game_state.card_picture[game_state.card_order[0] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/haskell.png";
-        game_state.card_picture[game_state.card_order[1] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/java.png";
-        game_state.card_picture[game_state.card_order[2] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/python.png";
-        game_state.card_picture[game_state.card_order[3] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/kotlin.png";
-        game_state.card_picture[game_state.card_order[4] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/prolog.png";
-        game_state.card_picture[game_state.card_order[5] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/rust.png";
-        game_state.card_picture[game_state.card_order[6] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/kotlin.png";
-        game_state.card_picture[game_state.card_order[7] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/java.png";
-        game_state.card_picture[game_state.card_order[8] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/rust.png";
-        game_state.card_picture[game_state.card_order[9] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/haskell.png";
-        game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/prolog.png";
-        game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/python.png";
-        game_state.card_picture[game_state.card_order[12] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/scala.png";
-        game_state.card_picture[game_state.card_order[13] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/scala.png";
-        game_state.card_picture[game_state.card_order[14] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/c++.png";
-        game_state.card_picture[game_state.card_order[15] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/c++.png";
-        game_state.card_picture[game_state.card_order[16] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/lisp.png";
-        game_state.card_picture[game_state.card_order[17] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/lisp.png";
-        game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
-        game_state.exit_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/exit.png";
-        for i in 0 .. NUM_OF_CARDS {
-            game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/200x200/background.png";
+        if(!game_state.picked_globaly[game_state.card_order[0] as usize]) {game_state.card_picture[game_state.card_order[0] as usize] = "resources/200x200/haskell.png";}
+        if(!game_state.picked_globaly[game_state.card_order[1] as usize]) {game_state.card_picture[game_state.card_order[1] as usize] = "resources/200x200/haskell.png";}
+        if(!game_state.picked_globaly[game_state.card_order[2] as usize]) {game_state.card_picture[game_state.card_order[2] as usize] = "resources/200x200/kotlin.png";}
+        if(!game_state.picked_globaly[game_state.card_order[3] as usize]) {game_state.card_picture[game_state.card_order[3] as usize] = "resources/200x200/kotlin.png";}
+        if(!game_state.picked_globaly[game_state.card_order[4] as usize]) {game_state.card_picture[game_state.card_order[4] as usize] = "resources/200x200/prolog.png";}
+        if(!game_state.picked_globaly[game_state.card_order[5] as usize]) {game_state.card_picture[game_state.card_order[5] as usize] = "resources/200x200/prolog.png";}
+        if(!game_state.picked_globaly[game_state.card_order[6] as usize]) {game_state.card_picture[game_state.card_order[6] as usize] = "resources/200x200/java.png";}
+        if(!game_state.picked_globaly[game_state.card_order[7] as usize]) {game_state.card_picture[game_state.card_order[7] as usize] = "resources/200x200/java.png";}
+        if(!game_state.picked_globaly[game_state.card_order[8] as usize]) {game_state.card_picture[game_state.card_order[8] as usize] = "resources/200x200/rust.png";}
+        if(!game_state.picked_globaly[game_state.card_order[9] as usize]) {game_state.card_picture[game_state.card_order[9] as usize] = "resources/200x200/rust.png";}
+        if(!game_state.picked_globaly[game_state.card_order[10] as usize]) {game_state.card_picture[game_state.card_order[10] as usize] = "resources/200x200/python.png";}
+        if(!game_state.picked_globaly[game_state.card_order[11] as usize]) {game_state.card_picture[game_state.card_order[11] as usize] = "resources/200x200/python.png";}
+        if(game_state.number_of_cards >=18) {
+            if (!game_state.picked_globaly[game_state.card_order[12] as usize]) { game_state.card_picture[game_state.card_order[12] as usize] = "resources/200x200/scala.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[13] as usize]) { game_state.card_picture[game_state.card_order[13] as usize] = "resources/200x200/scala.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[14] as usize]) { game_state.card_picture[game_state.card_order[14] as usize] = "resources/200x200/c++.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[15] as usize]) { game_state.card_picture[game_state.card_order[15] as usize] = "resources/200x200/c++.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[16] as usize]) { game_state.card_picture[game_state.card_order[16] as usize] = "resources/200x200/lisp.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[17] as usize]) { game_state.card_picture[game_state.card_order[17] as usize] = "resources/200x200/lisp.png"; }
+        }
+        if(game_state.number_of_cards ==24) {
+            if (!game_state.picked_globaly[game_state.card_order[18] as usize]) { game_state.card_picture[game_state.card_order[18] as usize] = "resources/200x200/fortran.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[19] as usize]) { game_state.card_picture[game_state.card_order[19] as usize] = "resources/200x200/fortran.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[20] as usize]) { game_state.card_picture[game_state.card_order[20] as usize] = "resources/200x200/ruby.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[21] as usize]) { game_state.card_picture[game_state.card_order[21] as usize] = "resources/200x200/ruby.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[22] as usize]) { game_state.card_picture[game_state.card_order[22] as usize] = "resources/200x200/go.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[23] as usize]) { game_state.card_picture[game_state.card_order[23] as usize] = "resources/200x200/go.png"; }
+        }
+        game_state.background_picture = "resources/200x200/background.png";
+        game_state.exit_picture = "resources/200x200/exit.png";
+        for i in 0 .. game_state.number_of_cards {
+            if(!game_state.picked_globaly[i]) {
+                game_state.background_pictures[i as usize] = "resources/200x200/background.png";
+            }
         }
     }
     else if game_state.image_size == 100{
-        game_state.card_picture[game_state.card_order[0] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/haskell.png";
-        game_state.card_picture[game_state.card_order[1] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/java.png";
-        game_state.card_picture[game_state.card_order[2] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/python.png";
-        game_state.card_picture[game_state.card_order[3] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/kotlin.png";
-        game_state.card_picture[game_state.card_order[4] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/prolog.png";
-        game_state.card_picture[game_state.card_order[5] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/rust.png";
-        game_state.card_picture[game_state.card_order[6] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/kotlin.png";
-        game_state.card_picture[game_state.card_order[7] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/java.png";
-        game_state.card_picture[game_state.card_order[8] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/rust.png";
-        game_state.card_picture[game_state.card_order[9] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/haskell.png";
-        game_state.card_picture[game_state.card_order[10] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/prolog.png";
-        game_state.card_picture[game_state.card_order[11] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/python.png";
-        game_state.card_picture[game_state.card_order[12] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/scala.png";
-        game_state.card_picture[game_state.card_order[13] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/scala.png";
-        game_state.card_picture[game_state.card_order[14] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/c++.png";
-        game_state.card_picture[game_state.card_order[15] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/c++.png";
-        game_state.card_picture[game_state.card_order[16] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/lisp.png";
-        game_state.card_picture[game_state.card_order[17] as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/lisp.png";
-        game_state.background_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/background.png";
-        game_state.exit_picture = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/exit.png";
-        for i in 0 .. NUM_OF_CARDS {
-            game_state.background_pictures[i as usize] = "/home/labus/Desktop/cao/Matching-Programming-Languages/resources/100x100/background.png";
+        if(!game_state.picked_globaly[game_state.card_order[0] as usize]) {game_state.card_picture[game_state.card_order[0] as usize] = "resources/100x100/haskell.png";}
+        if(!game_state.picked_globaly[game_state.card_order[1] as usize]) {game_state.card_picture[game_state.card_order[1] as usize] = "resources/100x100/haskell.png";}
+        if(!game_state.picked_globaly[game_state.card_order[2] as usize]) {game_state.card_picture[game_state.card_order[2] as usize] = "resources/100x100/kotlin.png";}
+        if(!game_state.picked_globaly[game_state.card_order[3] as usize]) {game_state.card_picture[game_state.card_order[3] as usize] = "resources/100x100/kotlin.png";}
+        if(!game_state.picked_globaly[game_state.card_order[4] as usize]) {game_state.card_picture[game_state.card_order[4] as usize] = "resources/100x100/prolog.png";}
+        if(!game_state.picked_globaly[game_state.card_order[5] as usize]) {game_state.card_picture[game_state.card_order[5] as usize] = "resources/100x100/prolog.png";}
+        if(!game_state.picked_globaly[game_state.card_order[6] as usize]) {game_state.card_picture[game_state.card_order[6] as usize] = "resources/100x100/java.png";}
+        if(!game_state.picked_globaly[game_state.card_order[7] as usize]) {game_state.card_picture[game_state.card_order[7] as usize] = "resources/100x100/java.png";}
+        if(!game_state.picked_globaly[game_state.card_order[8] as usize]) {game_state.card_picture[game_state.card_order[8] as usize] = "resources/100x100/rust.png";}
+        if(!game_state.picked_globaly[game_state.card_order[9] as usize]) {game_state.card_picture[game_state.card_order[9] as usize] = "resources/100x100/rust.png";}
+        if(!game_state.picked_globaly[game_state.card_order[10] as usize]) {game_state.card_picture[game_state.card_order[10] as usize] = "resources/100x100/python.png";}
+        if(!game_state.picked_globaly[game_state.card_order[11] as usize]) {game_state.card_picture[game_state.card_order[11] as usize] = "resources/100x100/python.png";}
+        if(game_state.number_of_cards >=18) {
+            if (!game_state.picked_globaly[game_state.card_order[12] as usize]) { game_state.card_picture[game_state.card_order[12] as usize] = "resources/100x100/scala.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[13] as usize]) { game_state.card_picture[game_state.card_order[13] as usize] = "resources/100x100/scala.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[14] as usize]) { game_state.card_picture[game_state.card_order[14] as usize] = "resources/100x100/c++.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[15] as usize]) { game_state.card_picture[game_state.card_order[15] as usize] = "resources/100x100/c++.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[16] as usize]) { game_state.card_picture[game_state.card_order[16] as usize] = "resources/100x100/lisp.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[17] as usize]) { game_state.card_picture[game_state.card_order[17] as usize] = "resources/100x100/lisp.png"; }
+        }
+        if(game_state.number_of_cards ==24) {
+            if (!game_state.picked_globaly[game_state.card_order[18] as usize]) { game_state.card_picture[game_state.card_order[18] as usize] = "resources/100x100/fortran.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[19] as usize]) { game_state.card_picture[game_state.card_order[19] as usize] = "resources/100x100/fortran.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[20] as usize]) { game_state.card_picture[game_state.card_order[20] as usize] = "resources/100x100/ruby.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[21] as usize]) { game_state.card_picture[game_state.card_order[21] as usize] = "resources/100x100/ruby.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[22] as usize]) { game_state.card_picture[game_state.card_order[22] as usize] = "resources/100x100/go.png"; }
+            if (!game_state.picked_globaly[game_state.card_order[23] as usize]) { game_state.card_picture[game_state.card_order[23] as usize] = "resources/100x100/go.png"; }
+        }
+        game_state.background_picture = "resources/100x100/background.png";
+        game_state.exit_picture = "resources/100x100/exit.png";
+        for i in 0 .. game_state.number_of_cards {
+            if(!game_state.picked_globaly[i]) {
+                game_state.background_pictures[i as usize] = "resources/100x100/background.png";
+            }
         }
     }
-
-    game_state.pick_number = 0;
-    game_state.correct_pairs = 0;
-    game_state.card = -1;
     let num_columns = 6;
     let num_rows = 3;
     for n in 0..num_rows {

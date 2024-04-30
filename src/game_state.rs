@@ -275,8 +275,6 @@ impl eframe::App for GameState {
                     });
                 }
             }
-
-
         });
     }
 }
@@ -306,21 +304,13 @@ fn compare_cards(game_state: &mut GameState) -> () {
         else if(!game_state.normal){
             randomize_cards(game_state);
         }
-
     }else {
         for i in 0..game_state.number_of_cards {
             if game_state.picked_localy[i]{
                 game_state.picked_globaly[i] = false;
             }
         }
-
     }
-
-
-    // TODO
-    //ovde sad treba da se obrisu dva
-    // mozemo da stavimo da ne nestaju
-
 }
 
 fn reset_background_cards(game_state: &mut GameState) {
@@ -344,7 +334,6 @@ fn reset_background_cards(game_state: &mut GameState) {
             }
         }
     }
-
 }
 fn full_reset(mut game_state: &mut GameState) -> () {
     game_state.pick_number = 0;

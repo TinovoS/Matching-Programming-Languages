@@ -1,10 +1,10 @@
-# Memmory game
+# Memory game
 
 
 ## Opis teme
 Projekat izrađen u okviru kursa [Programske paradigme](http://www.programskijezici.matf.bg.ac.rs/ProgramskeParadigmeI.html) napisan na programskom jeziku **Rust**.
 
-Aplikacija Memmory game je igrica pogađanja kartica u kojoj je cilj okrenuti sve kartice.
+Aplikacija Memory game je igrica pogađanja kartica u kojoj je cilj okrenuti sve kartice.
 Sadrži dve težine, normal i extreme. Normal sadrži 3 levela, od kojih svaki ima više kartica od prethodnog.
 Kad se pogode sve kartice prelazi se na sledeći nivo, a kad se završi treći nivo igrač je pobedio.
 U extreme se svaki put menjaju kartice kada igrač pogodi par, a igrač pobeđuje kad pogodi sve parove 
@@ -20,10 +20,7 @@ U extreme se svaki put menjaju kartice kada igrač pogodi par, a igrač pobeđuj
 
 ## Komande za pokretanje i rad
 *   cargo build - za kompilaciju lokalnih paketa i njihovih zavisnosti
-*   cargo run **record** <**name**>
-*   cargo run **play** <**name**>
-*   cargo run **list**
-*   cargo run **delete** <**name**>
+*   cargo run
 
 
 ## Autori

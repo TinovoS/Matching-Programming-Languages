@@ -155,6 +155,7 @@ impl eframe::App for GameState {
                         let exit_button = egui::ImageButton::new(&exit_img);
                         if row.add(exit_button).clicked() {
                             full_reset(self);
+                            self.start = true;
                             self.play = false;
                         }
 
@@ -252,7 +253,6 @@ impl eframe::App for GameState {
                                     self.level = 1;
                                     self.number_of_cards = 12;
                                     // Initialize the state
-                                    randomize_cards(self);
                                 }
                             }
                             else {
@@ -270,7 +270,6 @@ impl eframe::App for GameState {
                                     self.start = false;
                                     self.number_of_cards = 18;
                                     self.level = 3;
-                                    randomize_cards(self);
 
                                 }
                             }
@@ -318,6 +317,8 @@ impl eframe::App for GameState {
                                     self.play = true;
                                     self.show_popup = false;
                                     self.image_size = 100;
+                                    randomize_cards(self);
+
                                 }
                             }
                             else {
@@ -333,6 +334,8 @@ impl eframe::App for GameState {
                                     self.play = true;
                                     self.show_popup = false;
                                     self.image_size = 200;
+                                    randomize_cards(self);
+
                                 }
                             }
                             else {
@@ -484,7 +487,7 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
             if (!game_state.picked_globaly[game_state.card_order[23] as usize]) { game_state.card_picture[game_state.card_order[23] as usize] = "resources/200x200/go.png"; }
         }
         game_state.background_picture = "resources/200x200/background.png";
-        game_state.exit_picture = "resources/logo.png";
+        game_state.exit_picture = "resources/logo(1).png";
         for i in 0 .. game_state.number_of_cards {
             if(!game_state.picked_globaly[i]) {
                 game_state.background_pictures[i as usize] = "resources/200x200/background.png";
@@ -521,7 +524,7 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
             if (!game_state.picked_globaly[game_state.card_order[23] as usize]) { game_state.card_picture[game_state.card_order[23] as usize] = "resources/100x100/go.png"; }
         }
         game_state.background_picture = "resources/100x100/background.png";
-        game_state.exit_picture = "resources/logo.png";
+        game_state.exit_picture = "resources/logo(1).png";
         for i in 0 .. game_state.number_of_cards {
             if(!game_state.picked_globaly[i]) {
                 game_state.background_pictures[i as usize] = "resources/100x100/background.png";

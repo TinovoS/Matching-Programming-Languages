@@ -33,7 +33,10 @@ pub struct GameState {
     level: i8,
     number_of_cards: usize,
     victory: bool,
-    victory_picture: &'static str
+    victory_picture: &'static str,
+    logo_picture: &'static str,
+    start:bool,
+
 }
 
 
@@ -63,6 +66,8 @@ impl GameState {
             number_of_cards: 12,
             victory: false,
             victory_picture: "resources/victory.png",
+            logo_picture: "resources/logo(2).png",
+            start: true
         };
 
         // Initialize the state
@@ -74,11 +79,18 @@ impl eframe::App for GameState {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
 
 
-
+        let my_frame = egui::containers::Frame {
+            inner_margin: egui::Margin { left: 10., right: 10., top: 10., bottom: 10. },
+            outer_margin: egui::Margin { left: 10., right: 10., top: 10., bottom: 10. },
+            rounding: egui::Rounding { nw: 1.0, ne: 1.0, sw: 1.0, se: 1.0 },
+            shadow: eframe::epaint::Shadow { offset: [1.0, 2.0].into(), blur: 0.0, spread:0.0, color: Color32::YELLOW },
+            fill: egui::Color32::from_rgba_premultiplied(201,194,188,255),
+            stroke: egui::Stroke::new(2.0, Color32::GOLD),
+        };
         //lets initialize game status
         //------------------------------------
         //------------------------------------
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().frame(my_frame).show(ctx, |ui| {
             if self.victory{
 
                 let available_size = ctx.screen_rect().size();
@@ -204,74 +216,139 @@ impl eframe::App for GameState {
 
                             }
                         });
-                }
+                }   
             }
             else {
-                ui.horizontal(|ui| {
-                    let available_size = ctx.screen_rect().size();
-                    let min_col_width = available_size.x  / 3 as f32;
-                    let min_row_height = available_size.y as f32;
+                if self.start {
+                    
+                    ui.vertical_centered_justified(|ui| {
+                        let available_size = ctx.screen_rect().size();
+                        let min_col_width = available_size.x*6.0/10.0   as f32;
+                        let min_row_height = (available_size.y/10.0) as f32;
+                        let inter_row_spacing = min_row_height/2.0;
+                        let center = available_size.x/5.0;
+                        let center_image = available_size.x/3.0;
+                        
+                        ui.horizontal(|ui| {
+                            ui.add_space(center_image);
 
-                    ui.vertical(|ui| {
-                        if !self.play {
-                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Normal").size(200.0).strong())).clicked() {
-                                self.show_popup = true;
-                                self.normal = true;
-                                self.level = 1;
-                                self.number_of_cards = 12;
-                                // Initialize the state
-                                randomize_cards(self);
+                            let mut logo_image = ui.ctx().load_texture(
+                                "my-image",
+                                get_image(&self.logo_picture, 0, 0, 100, 100),
+                                Default::default(),
+                            );
+
+                            ui.add(egui::Image::new(&logo_image));
+                        });
+                        ui.add_space(inter_row_spacing);
+                        ui.horizontal(|ui| {
+                            ui.add_space(center);
+
+                            if !self.play {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Normal").size(100.0).strong())).clicked() {
+                                    self.show_popup = true;
+                                    self.start = false;
+                                    self.normal = true;
+                                    self.level = 1;
+                                    self.number_of_cards = 12;
+                                    // Initialize the state
+                                    randomize_cards(self);
+                                }
                             }
-                        }
-                        else {
-                            ui.label("Game is playing...");
-                        }
-                    });
-                    ui.vertical(|ui| {
-                        if !self.play {
-                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Extreme").size(200.0).strong())).clicked() {
-                                self.show_popup = true;
-                                self.normal = false;
-                                self.number_of_cards = 18;
-                                self.level = 3;
-                                randomize_cards(self);
-
+                            else {
+                                ui.label("Game is playing...");
                             }
-                        }
-                        else {
-                            ui.label("Game is playing...");
-                        }
-                    });
-                    ui.vertical(|ui| {
-                        if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Quit").size(200.0).strong())).clicked() {
-                            std::process::exit(0);
-                        }
-                    });
+                        });
+                        ui.add_space(inter_row_spacing);
+                        ui.horizontal(|ui| {
+                            ui.add_space(center);
 
-                });
+                            if !self.play {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Extreme").size(100.0).strong())).clicked() {
+                                    self.show_popup = true;
+                                    self.normal = false;
+                                    self.start = false;
+                                    self.number_of_cards = 18;
+                                    self.level = 3;
+                                    randomize_cards(self);
+
+                                }
+                            }
+                            else {
+                                ui.label("Game is playing...");
+                            }
+                        });
+                        ui.add_space(inter_row_spacing);
+                        ui.horizontal(|ui| {
+                            ui.add_space(center);
+
+                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Quit").size(100.0).strong())).clicked() {
+                                std::process::exit(0);
+                            }
+                        });
+
+                    });    
+                }
                 if self.show_popup {
+                    ui.vertical_centered_justified(|ui| {
+                        let available_size = ctx.screen_rect().size();
+                        let min_col_width = available_size.x*6.0/10.0   as f32;
+                        let min_row_height = (available_size.y/10.0) as f32;
+                        let inter_row_spacing = min_row_height/2.0;
+                        let center = available_size.x/5.0;
+                        let center_image = available_size.x/3.0;
+                        
+                        ui.horizontal(|ui| {
+                            ui.add_space(center_image);
 
-                    ui.horizontal_centered(|ui| {
-                        egui::Window::new("Popup")
-                            .default_size([700.0, 700.0])
-                            .min_size([700.0, 700.0])// Change the size as needed
-                            .show(ui.ctx(), |ui| {
-                                ui.label("This is a centered popup window!");
-                                if ui.button("100x100").clicked() {
+                            let mut logo_image = ui.ctx().load_texture(
+                                "my-image",
+                                get_image(&self.logo_picture, 0, 0, 100, 100),
+                                Default::default(),
+                            );
+
+                            ui.add(egui::Image::new(&logo_image));
+                        });
+                        ui.add_space(inter_row_spacing);
+                        ui.horizontal(|ui| {
+                            ui.add_space(center);
+
+                            if !self.play {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("100px").size(100.0).strong())).clicked() {
                                     self.play = true;
                                     self.show_popup = false;
                                     self.image_size = 100;
-                                    randomize_cards(self);
-
                                 }
-                                if ui.button("200x200").clicked() {
+                            }
+                            else {
+                                ui.label("Game is playing...");
+                            }
+                        });
+                        ui.add_space(inter_row_spacing);
+                        ui.horizontal(|ui| {
+                            ui.add_space(center);
+
+                            if !self.play {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("200px").size(100.0).strong())).clicked() {
                                     self.play = true;
                                     self.show_popup = false;
                                     self.image_size = 200;
-                                    randomize_cards(self);
-
                                 }
-                            });
+                            }
+                            else {
+                                ui.label("Game is playing...");
+                            }
+                        });
+                        ui.add_space(inter_row_spacing);
+                        ui.horizontal(|ui| {
+                            ui.add_space(center);
+
+                            if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Back").size(100.0).strong())).clicked() {
+                                self.show_popup = false;
+                                self.start = true;
+                            }
+                        });
+
                     });
                 }
             }
@@ -300,6 +377,7 @@ fn compare_cards(game_state: &mut GameState) -> () {
         }
         else if game_state.correct_pairs == (game_state.number_of_cards as u8) /2 && game_state.level == 3{
             game_state.victory = true;
+            game_state.play = false;
         }
         else if(!game_state.normal){
             randomize_cards(game_state);
@@ -406,7 +484,7 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
             if (!game_state.picked_globaly[game_state.card_order[23] as usize]) { game_state.card_picture[game_state.card_order[23] as usize] = "resources/200x200/go.png"; }
         }
         game_state.background_picture = "resources/200x200/background.png";
-        game_state.exit_picture = "resources/200x200/exit.png";
+        game_state.exit_picture = "resources/logo.png";
         for i in 0 .. game_state.number_of_cards {
             if(!game_state.picked_globaly[i]) {
                 game_state.background_pictures[i as usize] = "resources/200x200/background.png";
@@ -443,7 +521,7 @@ fn randomize_cards(mut game_state: &mut GameState) -> () {
             if (!game_state.picked_globaly[game_state.card_order[23] as usize]) { game_state.card_picture[game_state.card_order[23] as usize] = "resources/100x100/go.png"; }
         }
         game_state.background_picture = "resources/100x100/background.png";
-        game_state.exit_picture = "resources/100x100/exit.png";
+        game_state.exit_picture = "resources/logo.png";
         for i in 0 .. game_state.number_of_cards {
             if(!game_state.picked_globaly[i]) {
                 game_state.background_pictures[i as usize] = "resources/100x100/background.png";

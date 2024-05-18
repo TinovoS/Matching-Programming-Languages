@@ -1,9 +1,10 @@
-
-
+use std::fmt;
+use std::time::{Duration, Instant};
 use eframe::egui::{self, include_image, TextureHandle};
 use egui::ImageData;
 use std::path::Path;
 use std::{thread, time};
+use std::ops::Div;
 use egui::{RichText, FontId, Color32};
 
 
@@ -11,7 +12,6 @@ const NUM_OF_CARDS: usize = 24;
 
 
 
-#[derive(Default)]
 pub struct GameState {
     picked_globaly: [bool; NUM_OF_CARDS ],
     picked_localy: [bool; NUM_OF_CARDS ],
@@ -36,6 +36,7 @@ pub struct GameState {
     victory_picture: &'static str,
     logo_picture: &'static str,
     start:bool,
+    time: Instant
 }
 
 
@@ -66,7 +67,8 @@ impl GameState {
             victory: false,
             victory_picture: "resources/victory.png",
             logo_picture: "resources/logo(1).png",
-            start: true
+            start: true,
+            time: Instant::now()
         };
 
         // Initialize the state
@@ -187,12 +189,24 @@ impl eframe::App for GameState {
                             });
 */
                         let another_text_label = "Another Text Here";
-                        let framed_another_text_label = egui::Frame::none()
-                            .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
-                            .fill(GRAY)
-                            .show(row, |ui| {
-                                ui.label(RichText::new("Level: ".to_owned() + &*(self.level).to_string()).font(FontId::proportional(40.0)));
-                            });
+                        if(self.normal){
+                            let framed_another_text_label = egui::Frame::none()
+                                .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
+                                .fill(GRAY)
+                                .show(row, |ui| {
+                                    ui.label(RichText::new("Level: ".to_owned() + &*(self.level).to_string()).font(FontId::proportional(40.0)));
+                                });
+                        }
+                        else{
+                            let s = format!("Time: {:?}" , self.time.elapsed().as_secs());
+                            let framed_another_text_label = egui::Frame::none()
+                                .inner_margin(egui::Margin::symmetric(available_size.x*0.99  / 6.0,0.0))
+                                .fill(GRAY)
+                                .show(row, |ui| {
+                                    ui.label(RichText::new(s).font(FontId::proportional(40.0)));
+                                });
+
+                        }
 
                     });
 
@@ -279,12 +293,10 @@ impl eframe::App for GameState {
                             ui.add_space(center);
 
                             if !self.play {
-                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Normal").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Play").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
                                     self.show_popup = true;
                                     self.start = false;
-                                    self.normal = true;
-                                    self.level = 3;
-                                    self.number_of_cards = 24;
+
                                     // Initialize the state
                                 }
                             }
@@ -296,19 +308,6 @@ impl eframe::App for GameState {
                         ui.horizontal(|ui| {
                             ui.add_space(center);
 
-                            if !self.play {
-                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Extreme").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
-                                    self.show_popup = true;
-                                    self.normal = false;
-                                    self.start = false;
-                                    self.number_of_cards = 18;
-                                    self.level = 3;
-
-                                }
-                            }
-                            else {
-                                ui.label("Game is playing...");
-                            }
                         });
                         ui.add_space(inter_row_spacing);
                         ui.horizontal(|ui| {
@@ -360,9 +359,12 @@ impl eframe::App for GameState {
                             ui.add_space(center);
 
                             if !self.play {
-                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("100px").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Normal").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
                                     self.play = true;
                                     self.show_popup = false;
+                                    self.normal = true;
+                                    self.level = 1;
+                                    self.number_of_cards = 12;
                                     randomize_cards(self);
 
                                 }
@@ -376,9 +378,13 @@ impl eframe::App for GameState {
                             ui.add_space(center);
 
                             if !self.play {
-                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("200px").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
+                                if ui.add_sized([min_col_width, min_row_height],egui::Button::new(RichText::new("Extreme").size(100.0*ctx.screen_rect().size().x  /1900 as f32).strong())).clicked() {
                                     self.play = true;
                                     self.show_popup = false;
+                                    self.normal = false;
+                                    self.number_of_cards = 18;
+                                    self.level = 3;
+                                    self.time = Instant::now();
                                     randomize_cards(self);
 
                                 }

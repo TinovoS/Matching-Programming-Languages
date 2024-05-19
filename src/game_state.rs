@@ -96,6 +96,27 @@ impl eframe::App for GameState {
             if self.victory{
 
                 let available_size = ctx.screen_rect().size();
+                if ((ctx.screen_rect().size().x >= 2560.0) && (ctx.screen_rect().size().y >= 1440.0)){
+                    self.victory_picture = "resources/victory2560.png";
+                }
+                else if ((ctx.screen_rect().size().x >= 1920.0) && (ctx.screen_rect().size().y >= 1080.0)){
+                    self.victory_picture = "resources/victory1920.png";
+                }
+                else if ((ctx.screen_rect().size().x >= 1600.0) && (ctx.screen_rect().size().y >= 900.0)){
+                    self.victory_picture = "resources/victory1600.png";
+                }
+                else if ((ctx.screen_rect().size().x >= 1536.0) && (ctx.screen_rect().size().y >= 864.0)){
+                    self.victory_picture = "resources/victory1536.png";
+                }
+                else if ((ctx.screen_rect().size().x >= 1400.0) && (ctx.screen_rect().size().y >= 900.0)){
+                    self.victory_picture = "resources/victory1440.png";
+                }
+                else if ((ctx.screen_rect().size().x >= 1365.0) && (ctx.screen_rect().size().y >= 768.0)){
+                    self.victory_picture = "resources/victory1365.png";
+                }
+                else if ((ctx.screen_rect().size().x >= 1280.0) && (ctx.screen_rect().size().y >= 720.0)){
+                    self.victory_picture = "resources/victory1280.png";
+                }
                 egui::Grid::new("victory")
                     .num_columns(1)
                     .min_col_width(available_size.x)
@@ -117,6 +138,7 @@ impl eframe::App for GameState {
                             full_reset(self);
                             self.play = false;
                             self.victory=false;
+                            self.start = true
                         }
                     });
             }

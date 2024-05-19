@@ -8,6 +8,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1d7c0928-02e3-45c9-bfb2-fdc3e784ad90" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/resources/victory1280.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/victory1365.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/victory1440.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/victory1536.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/victory1600.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/victory1920.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/victory2560.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/game_state.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/game_state.rs" afterDir="false" />
     </list>
@@ -55,6 +62,9 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/resources" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/resources" />
     </key>
   </component>

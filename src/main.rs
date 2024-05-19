@@ -11,7 +11,7 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
     eframe::run_native(
-        "My parallel egui App",
+        "Matching Programming Languages",
         options,
         Box::new(|_cc| Box::new(GameState::new())),
     )

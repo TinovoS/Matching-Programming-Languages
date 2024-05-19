@@ -92,7 +92,7 @@ impl eframe::App for GameState {
         //------------------------------------
         //------------------------------------
         egui::CentralPanel::default().frame(my_frame).show(ctx, |ui| {
-            egui::ScrollArea::both().auto_shrink(false).show(ui, |ui| {
+            egui::ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
             if self.victory{
 
                 let available_size = ctx.screen_rect().size();

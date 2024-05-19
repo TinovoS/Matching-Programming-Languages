@@ -1,5 +1,6 @@
-# Memory game
+# Matching Programming Languages
 
+![plot](/resources/Normal_lvl1.png)
 
 ## Opis teme
 Projekat izrađen u okviru kursa [Programske paradigme](http://www.programskijezici.matf.bg.ac.rs/ProgramskeParadigmeI.html) napisan na programskom jeziku **Rust**.

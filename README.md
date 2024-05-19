@@ -4,13 +4,13 @@
 
 The Memory Game app is a card-matching game where the goal is to flip all the cards. It features two difficulty levels, normal and extreme. 
 
-##Normal
+## Normal
 Normal includes 3 levels, each with more cards than the previous one. When all the cards are matched, the player moves to the next level, and after completing the third level, the player wins.
 Level 1                    |   Level 2
 :--------------------------: |:-------------------------:
 ![](/resources/Normal_lvl1.png)  |  ![](/resources/Normal_lvl2.png)
 
-##Extreme
+## Extreme
 In extreme mode, the cards are shuffled every time a pair is matched, and the player wins when all pairs are matched.
 ![](/resources/Extreme.png)
 

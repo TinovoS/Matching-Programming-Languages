@@ -18,9 +18,12 @@ Also in extreme mode, you can also track who is the fastest matcher by monitorin
 # Run Matching Programming Languages
 
 ## Linux
- [Rust i Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
+To install the necessary package to run the Rust project, use the following command below:
 
- Download the latest Matching-Programming-Languages.zip from releases, and run the app executable or use next commads in terminal:
+ [Rust i Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
+ 
+## ZIP or Clone
+Download the latest Matching-Programming-Languages.zip from releases, and run the app executable or use next commads in terminal:
  ```bash
  git clone https://github.com/TinovoS/Matching-Programming-Languages.git
  cd Matching-Programming-Languages
